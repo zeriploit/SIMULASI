@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Exambro Fake Pro — Ujian Kelas 6</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --muted:#9aa4b2;
+    --accent:#0ea5a4;
+    --accent-2:#06b6d4;
+    --glass: rgba(255,255,255,0.03);
+    --success:#10b981;
+    --danger:#ef4444;
+    --white: #e6eef5;
+    --radius:12px;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:
+    linear-gradient(180deg, rgba(8,12,20,1) 0%, rgba(14,19,28,1) 100%); color:var(--white); -webkit-font-smoothing:antialiased}
+  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .container{width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6);position:relative;overflow:hidden}
+  .header{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+  .logo{background:var(--glass);padding:10px;border-radius:10px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px}
+  .title{font-size:20px;font-weight:700}
+  .meta{margin-left:auto;text-align:right}
+  .watermark{position:absolute;left:16px;top:16px;color:rgba(255,255,255,0.04);font-weight:800;letter-spacing:2px}
+  .exam-stage{display:flex;gap:20px}
+  .left{
+    width:64%;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding:18px;border-radius:12px;height:70vh;overflow:auto;
+    border:1px solid rgba(255,255,255,0.03)
+  }
+  .right{
+    width:36%;
+    display:flex;flex-direction:column;gap:12px;align-items:stretch;
+    height:70vh;
+  }
+  .question-card{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px}
+  .q-number{font-weight:700;color:var(--accent)}
+  .options{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .opt{
+    display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);cursor:pointer;
+    background:transparent;
+  }
+  .opt input{transform:scale(1.1)}
+  .controls{display:flex;gap:8px;margin-top:12px;align-items:center}
+  .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#012026}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--white)}
+  .timer{font-weight:800;font-size:18px;color:var(--accent)}
+  .progress{height:12px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%}
+  .nav-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:8px;background:rgba(255,255,255,0.01);border-radius:8px}
+  .nav-grid button{padding:8px;border-radius:8px;border:none;cursor:pointer;background:rgba(255,255,255,0.02);color:var(--muted)}
+  .nav-grid button.answered{background:linear-gradient(90deg, rgba(16,185,129,0.12), rgba(6,182,212,0.06));color:var(--white);border:1px solid rgba(16,185,129,0.12)}
+  .info-card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+  .overlay{
+    position:fixed;inset:0;background:rgba(2,6,23,0.8);display:none;align-items:center;justify-content:center;color:var(--white);z-index:9999;
+    text-align:center;padding:20px
+  }
+  .overlay.show{display:flex}
+  .overlay .box{background:rgba(255,255,255,0.03);padding:22px;border-radius:12px;max-width:640px}
+  .muted{color:var(--muted);font-size:13px}
+  footer{margin-top:12px;text-align:center;color:var(--muted);font-size:12px}
+  @media (max-width:900px){
+    .exam-stage{flex-direction:column}
+    .left,.right{width:100%;height:auto;max-height:65vh}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="container" role="application" aria-label="Exambro Fake Pro">
+    <div class="watermark">Simulasi by Agam</div>
+    <div class="header">
+      <div class="logo">EXAMBRO<span style="font-weight:400;color:var(--muted);font-size:12px"> • Fake Pro</span></div>
+      <div>
+        <div class="title">Ujian Kelas 6 — Sekolah Dasar</div>
+        <div class="muted">Durasi: <span id="duration-label">30 menit</span> • Soal: <span id="total-label">20</span></div>
+      </div>
+      <div class="meta">
+        <div style="font-weight:800">Nama: <span id="user-name">Peserta</span></div>
+        <div class="muted">Instruksi: Kerjakan tanpa menyontek — fokus!</div>
+      </div>
+    </div>
+
+    <div class="exam-stage">
+      <div class="left">
+        <div id="start-screen" style="display:block;text-align:center;padding:36px">
+          <h2>Siap mulai ujian?</h2>
+          <p class="muted">Tekan <strong>Start</strong> untuk masuk ke mode fullscreen dan memulai timer. Sistem akan memantau tab/fokus. Menutup tab akan men-trigger peringatan.</p>
+          <div style="margin-top:20px;display:flex;gap:12px;justify-content:center">
+            <input id="name-input" placeholder="Masukkan nama peserta..." style="padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--white)" />
+            <button class="btn primary" id="start-btn">Start</button>
+          </div>
+          <p class="muted" style="margin-top:10px">NOTE: Fitur keamanan berbasis browser; devtools/OS shortcuts tidak 100% terkunci.</p>
+        </div>
+
+        <div id="exam-area" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="timer" id="timer">--:--</div>
+            <div class="muted">Soal <span id="current-num">1</span> / <span id="total-num">20</span></div>
+          </div>
+
+          <div id="question-holder"></div>
+
+          <div class="controls">
+            <button class="btn ghost" id="prev-btn">Sebelumnya</button>
+            <button class="btn ghost" id="next-btn">Selanjutnya</button>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <button class="btn primary" id="save-btn">Simpan (Auto)</button>
+              <button class="btn primary" id="submit-btn" style="background:var(--danger)">Kirim Jawaban</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="info-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div><strong>Progress</strong></div>
+            <div class="muted" id="answered-count">0 answered</div>
+          </div>
+          <div class="progress" aria-hidden="true"><i id="prog-bar"></i></div>
+
+          <div style="margin-top:12px" class="muted">Navigasi cepat</div>
+          <div class="nav-grid" id="nav-grid"></div>
+        </div>
+
+        <div class="info-card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Aturan</strong></div>
+            <div class="muted">Baca dulu</div>
+          </div>
+          <ol style="margin:8px 0 0 18px;color:var(--muted);font-size:13px">
+            <li>Kerjakan sendiri.</li>
+            <li>Jangan refresh halaman saat ujian berjalan.</li>
+            <li>Jika keluar tab, akan ada peringatan.</li>
+            <li>Jawaban tersimpan otomatis tiap 10 detik.</li>
+          </ol>
+        </div>
+
+        <div class="info-card" style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
+          <div>
+            <div class="muted">Timer</div>
+            <div style="font-weight:800;font-size:20px;margin-top:6px" id="right-timer">--:--</div>
+          </div>
+          <div style="margin-top:12px">
+            <div class="muted">Sisa waktu dianggap habis jika timer 0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px"><footer>© Simulasi Exambro • dibuat oleh Agam</footer></div>
+  </div>
+</div>
+
+<!-- overlay for focus/leave warning -->
+<div class="overlay" id="overlay">
+  <div class="box">
+    <h2 style="margin:0 0 8px">Peringatan: Tab tidak fokus!</h2>
+    <p class="muted">Anda meninggalkan jendela ujian. Silakan kembali untuk melanjutkan. Sistem akan mencatat pelanggaran. Jika keluar terus, ujian bisa di-submit otomatis.</p>
+    <div style="margin-top:12px">
+      <button class="btn primary" id="overlay-ok">Kembali ke Ujian</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  Exambro Fake Pro — Single file
+  - Untuk ganti soal, ubah array QUESTIONS di bawah.
+  - Durasi default di menit: DURATION_MINUTES
+*/
+
+const DURATION_MINUTES = 30; // bisa ubah
+const AUTO_SAVE_MS = 10000; // autosave interval
+const WARN_ON_LEAVE = true;
+
+// -----------------------------
+// === ISI SOAL DI SINI ===
+// Format: {id: n, q: "Pertanyaan...", opts: ["A","B","C"], answerIndex: 0 (optional) }
+const QUESTIONS = [
+  {id:1, q:"Apa ibukota Indonesia?", opts:["Jakarta","Bali","Surabaya"], answerIndex:0},
+  {id:2, q:"Siapa presiden pertama Indonesia?", opts:["Soekarno","Suharto","Habibie"], answerIndex:0},
+  {id:3, q:"Pilih hasil 5 + 7", opts:["11","12","13"], answerIndex:1},
+  {id:4, q:"Pelangi biasanya punya berapa warna utama?", opts:["3","7","5"], answerIndex:1},
+  {id:5, q:"Planet kita adalah?", opts:["Mars","Bumi","Venus"], answerIndex:1},
+  {id:6, q:"Apa warna bendera Indonesia?", opts:["Merah Putih","Merah Kuning","Hijau Putih"], answerIndex:0},
+  {id:7, q:"Siapa penemu telepon (diakui)?", opts:["Edison","Bell","Tesla"], answerIndex:1},
+  {id:8, q:"Suhu beku air (derajat C) adalah?", opts:["0","32","100"], answerIndex:0},
+  {id:9, q:"Hewan yang menyusui disebut?", opts:["Mamalia","Reptil","Burung"], answerIndex:0},
+  {id:10, q:"Ibu Kota Jawa Barat?", opts:["Bandung","Bogor","Cirebon"], answerIndex:0},
+  {id:11, q:"Ibukota negara Jepang?", opts:["Seoul","Beijing","Tokyo"], answerIndex:2},
+  {id:12, q:"Satuan panjang dasar SI?", opts:["Meter","Gram","Second"], answerIndex:0},
+  {id:13, q:"Lambang negara Indonesia?", opts:["Garuda Pancasila","Merpati","Macan"], answerIndex:0},
+  {id:14, q:"Apa fungsi akar pada tumbuhan?", opts:["Fotosintesis","Menopang & menyerap air","Membuat biji"], answerIndex:1},
+  {id:15, q:"Berapakah 9 x 6?", opts:["54","45","63"], answerIndex:0},
+  {id:16, q:"Nama pulau terbesar di Indonesia?", opts:["Sumatra","Kalimantan","Jawa"], answerIndex:1},
+  {id:17, q:"Alat musik petik tradisional Jawa?", opts:["Gamelan","Angklung","Gambang"], answerIndex:2},
+  {id:18, q:"Sumber energi matahari disebut?", opts:["Fotosintesis","Radiasi","Kalor"], answerIndex:1},
+  {id:19, q:"Negara dengan bahasa resmi Bahasa Spanyol?", opts:["Brazil","Meksiko","Portugal"], answerIndex:1},
+  {id:20, q:"Siapa penulis 'Bumi Manusia'?", opts:["Pramoedya Ananta Toer","Ahmad Tohari","Chairil Anwar"], answerIndex:0}
+];
+// -----------------------------
+
+// state
+let state = {
+  started:false,
+  startAt:null,
+  duration: DURATION_MINUTES * 60, // seconds
+  remaining: DURATION_MINUTES * 60,
+  currentIndex: 0,
+  answers: {}, // id -> selected index
+  violations: 0,
+  name: ''
+};
+
+// dom refs
+const startBtn = document.getElementById('start-btn');
+const examArea = document.getElementById('exam-area');
+const startScreen = document.getElementById('start-screen');
+const questionHolder = document.getElementById('question-holder');
+const timerEl = document.getElementById('timer');
+const rightTimerEl = document.getElementById('right-timer');
+const currentNum = document.getElementById('current-num');
+const totalNum = document.getElementById('total-num');
+const totalLabel = document.getElementById('total-label');
+const durationLabel = document.getElementById('duration-label');
+const navGrid = document.getElementById('nav-grid');
+const progBar = document.getElementById('prog-bar');
+const answeredCount = document.getElementById('answered-count');
+const nameInput = document.getElementById('name-input');
+const userNameLabel = document.getElementById('user-name');
+
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const saveBtn = document.getElementById('save-btn');
+const submitBtn = document.getElementById('submit-btn');
+const overlay = document.getElementById('overlay');
+const overlayOk = document.getElementById('overlay-ok');
+const startScreenName = document.getElementById('start-screen');
+
+// init labels
+totalNum.textContent = QUESTIONS.length;
+totalLabel.textContent = QUESTIONS.length;
+durationLabel.textContent = `${DURATION_MINUTES} menit`;
+
+// load saved if any
+function loadSaved(){
+  try{
+    const saved = localStorage.getItem('exambro_state_v1');
+    if(saved){
+      const d = JSON.parse(saved);
+      // basic merge
+      if(d && d.answers) state.answers = d.answers;
+      if(d && d.remaining) state.remaining = d.remaining;
+      if(d && d.name) { state.name = d.name; nameInput.value = d.name; userNameLabel.textContent = d.name || 'Peserta'; }
+    }
+  }catch(e){}
+}
+loadSaved();
+
+// render nav grid
+function renderNav(){
+  navGrid.innerHTML = '';
+  QUESTIONS.forEach((q, idx)=>{
+    const btn = document.createElement('button');
+    btn.textContent = q.id;
+    if(state.answers[q.id] !== undefined) btn.classList.add('answered');
+    btn.addEventListener('click', ()=>{ showQuestion(idx) });
+    navGrid.appendChild(btn);
+  });
+  updateProgress();
+}
+
+// render single question
+function renderQuestion(idx){
+  const q = QUESTIONS[idx];
+  const sel = state.answers[q.id];
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div><span class="q-number">Soal ${q.id}.</span> <span style="margin-left:8px">${q.q}</span></div>
+    <div class="options"></div>
+  `;
+  const optsHolder = card.querySelector('.options');
+  q.opts.forEach((opt, i)=>{
+    const id = `q${q.id}_opt${i}`;
+    const wrapper = document.createElement('label');
+    wrapper.className = 'opt';
+    wrapper.setAttribute('for', id);
+    wrapper.innerHTML = `<input type="radio" name="q${q.id}" id="${id}" value="${i}" ${sel===i ? 'checked' : ''} /> <div style="flex:1">${opt}</div>`;
+    wrapper.addEventListener('click', (ev)=>{
+      // set answer
+      state.answers[q.id] = i;
+      renderNav();
+      updateProgress();
+    });
+    optsHolder.appendChild(wrapper);
+  });
+  return card;
+}
+
+// show question by index
+function showQuestion(idx){
+  if(idx < 0) idx = 0;
+  if(idx >= QUESTIONS.length) idx = QUESTIONS.length-1;
+  state.currentIndex = idx;
+  questionHolder.innerHTML = '';
+  questionHolder.appendChild(renderQuestion(idx));
+  currentNum.textContent = idx+1;
+  // focus first input if any
+  const firstInput = questionHolder.querySelector('input');
+  if(firstInput) firstInput.focus();
+}
+
+// progress bar
+function updateProgress(){
+  const total = QUESTIONS.length;
+  const answered = Object.keys(state.answers).length;
+  const pct = Math.round((answered/total)*100);
+  progBar.style.width = pct + '%';
+  answeredCount.textContent = `${answered} answered`;
+  // update nav grid buttons
+  Array.from(navGrid.children).forEach((btn, idx)=>{
+    if(state.answers[QUESTIONS[idx].id] !== undefined) btn.classList.add('answered'); else btn.classList.remove('answered');
+  });
+}
+
+// timer
+let timerInterval = null;
+function startTimer(){
+  updateTimersUI();
+  timerInterval = setInterval(()=>{
+    state.remaining--;
+    if(state.remaining <= 0){
+      state.remaining = 0;
+      clearInterval(timerInterval);
+      finishExamAuto();
+    }
+    updateTimersUI();
+  }, 1000);
+}
+function updateTimersUI(){
+  const s = state.remaining;
+  const mm = String(Math.floor(s/60)).padStart(2,'0');
+  const ss = String(s % 60).padStart(2,'0');
+  timerEl.textContent = `${mm}:${ss}`;
+  rightTimerEl.textContent = `${mm}:${ss}`;
+}
+
+// autosave
+function saveState(){
+  try{
+    const tosave = {
+      answers: state.answers,
+      remaining: state.remaining,
+      name: state.name
+    };
+    localStorage.setItem('exambro_state_v1', JSON.stringify(tosave));
+    // flash small feedback
+    saveBtn.textContent = 'Tersimpan';
+    setTimeout(()=>saveBtn.textContent = 'Simpan (Auto)', 900);
+  }catch(e){}
+}
+
+// submit/finish
+function finishExamAuto(){
+  alert('Waktu habis. Jawaban akan dikirim otomatis.');
+  submitExam();
+}
+function submitExam(){
+  // simple scoring
+  const results = [];
+  let correct = 0;
+  QUESTIONS.forEach(q=>{
+    const sel = state.answers[q.id];
+    const ok = (sel !== undefined && q.answerIndex !== undefined && sel === q.answerIndex);
+    if(ok) correct++;
+    results.push({id:q.id, selected:sel, correctIndex:q.answerIndex});
+  });
+
+  // clear timer
+  if(timerInterval) clearInterval(timerInterval);
+
+  // lock UI
+  document.body.removeEventListener('keydown', keydownPrevent, true);
+  overlay.classList.remove('show');
+
+  // show result
+  const score = Math.round((correct / QUESTIONS.length) * 100);
+  const html = `
+    <div style="padding:18px;color:var(--white);max-width:720px">
+      <h2>Ujian Selesai</h2>
+      <p class="muted">Nama: <strong>${escapeHtml(state.name || 'Peserta')}</strong></p>
+      <p class="muted">Skor: <strong>${score}%</strong> — ${correct} / ${QUESTIONS.length} benar</p>
+      <details style="margin-top:10px">
+        <summary style="cursor:pointer">Lihat detail jawaban</summary>
+        <div style="margin-top:8px">
+          ${results.map(r=>{
+            const q = QUESTIONS.find(x=>x.id===r.id);
+            const selText = (r.selected===undefined? '<em>Belum dijawab</em>' : q.opts[r.selected]);
+            const correctText = q.answerIndex===undefined? '<em>Tidak tersedia</em>' : q.opts[q.answerIndex];
+            const ok = (r.selected !== undefined && q.answerIndex !== undefined && r.selected===q.answerIndex);
+            return `<div style="margin-bottom:8px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)">
+              <div style="font-weight:700">Soal ${q.id}. ${q.q}</div>
+              <div style="margin-top:6px">Jawaban: ${selText} ${ok?'<span style="color:var(--success)">✔</span>':'<span style="color:var(--danger)">✖</span>'}</div>
+              <div class="muted">Kunci: ${correctText}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </details>
+      <div style="margin-top:12px"><button class="btn primary" id="close-result">Tutup</button></div>
+    </div>
+  `;
+  showOverlayCustom(html);
+  // clear saved state (simulate submit)
+  try{ localStorage.removeItem('exambro_state_v1'); }catch(e){}
+}
+
+// small helper to show custom overlay
+function showOverlayCustom(innerHtml){
+  overlay.querySelector('.box').innerHTML = innerHtml;
+  overlay.classList.add('show');
+  const closeBtn = document.getElementById('close-result');
+  if(closeBtn) closeBtn.addEventListener('click', ()=>{ overlay.classList.remove('show'); location.reload(); });
+}
+
+// escape HTML
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+
+// ===================== Event handlers & startup =====================
+startBtn.addEventListener('click', async ()=>{
+  const name = nameInput.value.trim() || 'Peserta';
+  state.name = name;
+  userNameLabel.textContent = name;
+
+  // try fullscreen
+  try{
+    await document.documentElement.requestFullscreen();
+  }catch(e){}
+  // switch UI
+  startScreen.style.display = 'none';
+  examArea.style.display = 'block';
+  state.started = true;
+  state.startAt = Date.now();
+  startTimer();
+  renderNav();
+  showQuestion(0);
+  // start autosave
+  saveState();
+  autosaveInterval = setInterval(saveState, AUTO_SAVE_MS);
+  // attach some protections
+  document.body.addEventListener('keydown', keydownPrevent, true);
+});
+
+// prev/next
+prevBtn.addEventListener('click', ()=>showQuestion(state.currentIndex-1));
+nextBtn.addEventListe
